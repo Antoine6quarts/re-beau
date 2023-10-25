@@ -1,11 +1,11 @@
 SICARD Antoine
 BELLIER Sacha
 
-12/25/2023
 
 # Projet Robotique
 
 ## Fin Séance 1
+12/25/2023
 
 Pour cette première séance, nous avons configuré notre projet pour lire les valeurs reçues par l'IMU. Nous appliquons tout d'abord un filtre de 44Hz puis les convertisons avec comme unitée de base g, puis nous les transmettons à la machine hôte par UART. Nous utilisons ensuite une extension de VSCode : "teleplot", qui nous permet d'afficher toutes ces valeurs sous forme de graphe en temps réel.
 
