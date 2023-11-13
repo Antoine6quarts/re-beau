@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "DEBUG build",
+            "command": "make -DDEBUG all -j",
+            "options": {
+                "cwd": "${workspaceFolder}/Source_Code"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "RELEASE build",
+            "command": "make all -j",
+            "options": {
+                "cwd": "${workspaceFolder}/Source_Code"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "flash",
+            "command": "make flash -j",
+            "options": {
+                "cwd": "${workspaceFolder}/Source_Code"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
