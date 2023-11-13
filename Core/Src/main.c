@@ -79,7 +79,7 @@ struct MPU6050_data g_data;
 #define MPU_ACCEL_COEF (2.0f / 32767.0f)
 // Coef for converting gyro value from mpu (-32768 to +32767) in deg/s (-250 to
 // +250)
-#define MPU_GYRO_COEF (250.0f / 32767.0f)
+#define MPU_GYRO_COEF (500.0f / 32767.0f)
 
 int _write(int fd, char *ptr, int len)
 {
@@ -131,7 +131,7 @@ int main(void)
 
     // Set the gyroscope scale range to +/-250 deg/s
     // Register 27 (see register map p14)
-    data = 0;
+    data = 1;
     if (HAL_I2C_Mem_Write(&hi2c1, IMU_ADR_WRITE, 27, 1, &data, 1, HAL_MAX_DELAY)
         != HAL_OK)
         printf("Failed to setup gyroscope range!\r\n");
@@ -143,7 +143,9 @@ int main(void)
         != HAL_OK)
         printf("Failed to setup accelerometer range!\r\n");
 
-    data = 3;
+    // Set filter
+    // Register 26 (see register map p15)
+    data = 0;
     if (HAL_I2C_Mem_Write(&hi2c1, IMU_ADR_WRITE, 26, 1, &data, 1, HAL_MAX_DELAY)
         != HAL_OK)
         printf("Failed to setup the filter!\r\n");
@@ -160,39 +162,50 @@ int main(void)
     // Little delay in case the MPU need to do some work before being able to
     // receive data
     HAL_Delay(15);
-
+    
+    float tickToS = 1.0f / 1000.0f;
+    float Y = 0.0f;
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1)
     {
+        uint32_t oldtick = HAL_GetTick();
+
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 
         HAL_I2C_Mem_Read(&hi2c1, IMU_ADR_READ, 59, 1, (uint8_t *)&g_data,
                          sizeof(struct MPU6050_data), HAL_MAX_DELAY);
 
         // Converting our value to g force(Accel) and to deg/sec(Gyro)
-        float accelX = MPU_ACCEL_COEF
-            * (((int16_t)g_data.accelX_MSB << 8) + (int16_t)g_data.accelX_LSB);
-        float accelY = MPU_ACCEL_COEF
-            * (((int16_t)g_data.accelY_MSB << 8) + (int16_t)g_data.accelY_LSB);
-        float accelZ = MPU_ACCEL_COEF
-            * (((int16_t)g_data.accelZ_MSB << 8) + (int16_t)g_data.accelZ_LSB);
-        float gyroX = MPU_GYRO_COEF
-            * (((int16_t)g_data.gyroX_MSB << 8) + (int16_t)g_data.gyroX_LSB);
+        // float accelX = MPU_ACCEL_COEF
+        //   * (((int16_t)g_data.accelX_MSB << 8) + (int16_t)g_data.accelX_LSB);
+        // float accelY = MPU_ACCEL_COEF
+        //   * (((int16_t)g_data.accelY_MSB << 8) + (int16_t)g_data.accelY_LSB);
+        // float accelZ = MPU_ACCEL_COEF
+        //   * (((int16_t)g_data.accelZ_MSB << 8) + (int16_t)g_data.accelZ_LSB);
+        // float gyroX = MPU_GYRO_COEF
+        //   * (((int16_t)g_data.gyroX_MSB << 8) + (int16_t)g_data.gyroX_LSB);
         float gyroY = MPU_GYRO_COEF
             * (((int16_t)g_data.gyroY_MSB << 8) + (int16_t)g_data.gyroY_LSB);
-        float gyroZ = MPU_GYRO_COEF
-            * (((int16_t)g_data.gyroZ_MSB << 8) + (int16_t)g_data.gyroZ_LSB);
+        // float gyroZ = MPU_GYRO_COEF
+        //   * (((int16_t)g_data.gyroZ_MSB << 8) + (int16_t)g_data.gyroZ_LSB);
 
         // Print to UART port, using Teleplot syntax
-        printf(">accelX:%f\r\n", accelX);
-        printf(">accelY:%f\r\n", accelY);
-        printf(">accelZ:%f\r\n", accelZ);
-        printf(">gyroX:%f\r\n", gyroX);
-        printf(">gyroY:%f\r\n", gyroY);
-        printf(">gyroZ:%f\r\n", gyroZ);
+        // printf(">accelX:%f\r\n", accelX);
+        // printf(">accelY:%f\r\n", accelY);
+        // printf(">accelZ:%f\r\n", accelZ);
+        // printf(">gyroX:%f\r\n", gyroX);
+        printf(">gyroY:%f\n", gyroY);
+        // printf(">gyroZ:%f\r\n", gyroZ);
+
+        float deltatickS = (HAL_GetTick() - oldtick) * tickToS;
+
+        Y += gyroY * deltatickS;
+
+        printf(">Y:%f\n", Y);
+        
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
