@@ -61,20 +61,10 @@ static void MX_I2C1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-int _close(int fd) { return 1; }
-int _fstat(int fd) { return 1; }
-int _getpid(int fd) { return 1; }
-int _isatty(int fd) { return 1; }
-int _kill(int fd) { return 1; }
-int _read(int fd, char* ptr, int len) { return 0; }
-int _lseek(int fd) { return 1; }
-void _exit(int fd) { while(1); }
-int _sbrk(int fd) { return 1; }
-
 int _write(int fd, char *ptr, int len)
 {
-    HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, HAL_MAX_DELAY);
-    return len;
+  HAL_UART_Transmit(&huart2, (const uint8_t *)ptr, len, HAL_MAX_DELAY);
+  return len;
 }
 
 volatile int process = 0;
@@ -82,12 +72,12 @@ void kalman_process();
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == IMU_INT_Pin)
-    {
-        if (process == 0)
-            return;
-        kalman_process();
-    }
+  if (GPIO_Pin == IMU_INT_Pin)
+  {
+      if (process == 0)
+          return;
+      kalman_process();
+  }
 }
 
 /* USER CODE END 0 */
@@ -123,36 +113,6 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  printf("%s", "BBBBBB\n");
-  HAL_Delay(300);
-
   // Init the I2C device
   HAL_StatusTypeDef ret = HAL_I2C_IsDeviceReady(&hi2c1, IMU_ADR_WRITE, 1, HAL_MAX_DELAY);
   if (ret != HAL_OK) printf("Failed to init device!\n");
@@ -372,7 +332,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : IMU_INT_Pin */
   GPIO_InitStruct.Pin = IMU_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/

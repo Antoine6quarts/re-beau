@@ -86,12 +86,12 @@ extern "C"
     float gyroZ = MPU_GYRO_COEF * (((int16_t)data.gyroZ_MSB << 8) + (int16_t)data.gyroZ_LSB);
 
     // Print to UART port, using Teleplot syntax
-    printf(">accelX:%f\n", accelX);
-    printf(">accelY:%f\n", accelY);
-    printf(">accelZ:%f\n", accelZ);
-    printf(">gyroX:%f\n", gyroX);
-    printf(">gyroY:%f\n", gyroY);
-    printf(">gyroZ:%f\n", gyroZ);
+    // printf(">accelX:%f\n", accelX);
+    // printf(">accelY:%f\n", accelY);
+    // printf(">accelZ:%f\n", accelZ);
+    // printf(">gyroX:%f\n", gyroX);
+    // printf(">gyroY:%f\n", gyroY);
+    // printf(">gyroZ:%f\n", gyroZ);
 
     // Orientation form Accelerometer
     float accelVector = sqrt((accelX * accelX)
