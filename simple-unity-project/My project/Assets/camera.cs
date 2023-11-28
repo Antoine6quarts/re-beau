@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO.Ports;
+using System;
 
 public class camera : MonoBehaviour
 {
     SerialPort data_stream = new SerialPort("/dev/ttyUSB0", 9600);
-    public string receivedString;
     
     /*
     public float sensitivity = 5.0f;
@@ -22,15 +22,15 @@ public class camera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        receivedString = data_stream.ReadLine().Trim();
-        Debug.Log(receivedString);
+        string str = data_stream.ReadLine().Trim();
+        Debug.Log(str);
 
-        if (receivedString.Equals("R"))
-            transform.eulerAngles += new Vector3(0, 10);
-        else if (receivedString.Equals("L"))
-            transform.eulerAngles += new Vector3(0, -10);
-        else
-            Debug.Log("None");
+        string[] str_arr = str.Split(',');
+        if (Int32.TryParse(str_arr[0], out int x_axis_changes) && 
+            Int32.TryParse(str_arr[1], out int y_axis_changes))
+        {
+            transform.eulerAngles += new Vector3(x_axis_changes, y_axis_changes, 0);
+        }
         /*
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
