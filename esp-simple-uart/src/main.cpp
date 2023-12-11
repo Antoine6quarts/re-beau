@@ -10,13 +10,13 @@ void loop() {
   // x_axis_changs,y_axis_changes
   Serial.println("0,0");
   delay(3000);
-  Serial.println("0,30");
+  Serial.println("0,30.5");
   delay(3000);
-  Serial.println("0,-30");
+  Serial.println("0,-30.5");
   delay(3000);
-  Serial.println("15, 15");
+  Serial.println("15.5, 15.5");
   delay(3000);
-  Serial.println("-15, -15");
+  Serial.println("-15.5, -15.5");
   delay(3000);
   for (int i = 0; i < 360; ++i)
   {

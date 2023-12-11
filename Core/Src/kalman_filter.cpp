@@ -130,7 +130,7 @@ extern "C"
     // Since this is a measurement and not a prediction this matrices will now be closer to the identity matrix 
     P = P - (K * S * K.transpose());
 
-    printf(">roll:%f\n", X[0]);
+    //printf(">roll:%f\n", X[0]);
     printf(">roll_rate:%f\n", X[1]);
   }
 }

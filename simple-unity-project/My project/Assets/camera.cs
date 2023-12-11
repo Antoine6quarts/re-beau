@@ -6,6 +6,7 @@ using System;
 
 public class camera : MonoBehaviour
 {
+    //SerialPort data_stream = new SerialPort("/dev/ttyACM0", 115200);
     SerialPort data_stream = new SerialPort("/dev/ttyUSB0", 9600);
     
     /*
@@ -23,11 +24,12 @@ public class camera : MonoBehaviour
     void Update()
     {
         string str = data_stream.ReadLine().Trim();
-        Debug.Log(str);
+        //Debug.Log(str);
 
         string[] str_arr = str.Split(',');
-        if (Int32.TryParse(str_arr[0], out int x_axis_changes) && 
-            Int32.TryParse(str_arr[1], out int y_axis_changes))
+        float x_axis_changes, y_axis_changes;
+        if (float.TryParse(str_arr[0], out x_axis_changes) && 
+            float.TryParse(str_arr[1], out y_axis_changes))
         {
             transform.eulerAngles += new Vector3(x_axis_changes, y_axis_changes, 0);
         }
