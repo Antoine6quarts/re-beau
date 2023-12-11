@@ -6,8 +6,8 @@ using System;
 
 public class camera : MonoBehaviour
 {
-    //SerialPort data_stream = new SerialPort("/dev/ttyACM0", 115200);
-    SerialPort data_stream = new SerialPort("/dev/ttyUSB0", 9600);
+    SerialPort data_stream = new SerialPort("/dev/ttyACM0", 115200);
+    //SerialPort data_stream = new SerialPort("/dev/ttyUSB0", 9600);
     
     /*
     public float sensitivity = 5.0f;
