@@ -18,8 +18,8 @@
 #include "Eigen/Core"
 #include "Eigen/Dense"
 
-// System run at 100Hz so delta T is 100Hz => 0.01 seconds of delta
-#define DELTA       0.01f
+// System run at 50Hz so delta T is 100Hz => 0.01 seconds of delta
+#define DELTA       0.05f
 #define RAD_2_DEG   57.2958f
 // Coef for converting accel value from mpu (-32768 to +32767) in g force (-4 to +4)
 #define MPU_ACCEL_COEF (2.0f / 32767.0f)
@@ -28,7 +28,7 @@
 
 // The system's state
 // Don't change this initial value, expect you know the system state at the beginning
-Eigen::Vector4f X; // [ roll; roll_rate, pitch, pitch_rate ]
+Eigen::Vector4f X; // [ roll; pitch; roll_rate; pitch_rate ]
 
 // The Estimated Covariance Matrix, "confidence" in the prediction
 // Don't change this initial value, expect you know the system state at the beginning
@@ -89,7 +89,7 @@ extern "C"
     float accelZ = MPU_ACCEL_COEF * (((int16_t)data.accelZ_MSB << 8) + (int16_t)data.accelZ_LSB);
     float gyroX = MPU_GYRO_COEF * (((int16_t)data.gyroX_MSB << 8) + (int16_t)data.gyroX_LSB);
     float gyroY = MPU_GYRO_COEF * (((int16_t)data.gyroY_MSB << 8) + (int16_t)data.gyroY_LSB);
-    // float gyroZ = MPU_GYRO_COEF * (((int16_t)data.gyroZ_MSB << 8) + (int16_t)data.gyroZ_LSB);
+    float gyroZ = MPU_GYRO_COEF * (((int16_t)data.gyroZ_MSB << 8) + (int16_t)data.gyroZ_LSB);
 
     // Print to UART port, using Teleplot syntax
     // printf(">accelX:%f\n", accelX);
@@ -133,6 +133,12 @@ extern "C"
     // Since this is a measurement and not a prediction this matrices will now be closer to the identity matrix 
     P = P - (K * S * K.transpose());
 
-    printf("%.2f,%.2f\n", X[0], X[2]);
+    static float yaw = 0.0f;
+    yaw += -gyroZ * DELTA;
+
+    printf("%.2f,%.2f,%.2f\n", X[0], X[1], yaw);
+    // printf(">roll:%.2f\n", X[0]);
+    // printf(">pitch:%.2f\n", X[1]);
+    // printf(">yaw:%.2f\n", yaw);
   }
 }
