@@ -24,14 +24,15 @@ public class camera : MonoBehaviour
     void Update()
     {
         string str = data_stream.ReadLine().Trim();
-        //Debug.Log(str);
+        Debug.Log(str);
 
         string[] str_arr = str.Split(',');
-        float x_axis_changes, y_axis_changes;
-        if (float.TryParse(str_arr[0], out x_axis_changes) && 
-            float.TryParse(str_arr[1], out y_axis_changes))
+        float roll, pitch, yaw;
+        if (float.TryParse(str_arr[0], out roll) && 
+            float.TryParse(str_arr[1], out pitch) &&
+            float.TryParse(str_arr[2], out yaw))
         {
-            transform.eulerAngles += new Vector3(x_axis_changes, y_axis_changes, 0);
+            transform.eulerAngles = new Vector3(pitch, yaw, roll);
         }
         /*
         float mouseX = Input.GetAxis("Mouse X");
