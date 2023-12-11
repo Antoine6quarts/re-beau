@@ -28,27 +28,33 @@
 
 // The system's state
 // Don't change this initial value, expect you know the system state at the beginning
-Eigen::Vector2f X; // [ roll; roll_rate ]
+Eigen::Vector4f X; // [ roll; roll_rate, pitch, pitch_rate ]
 
 // The Estimated Covariance Matrix, "confidence" in the prediction
 // Don't change this initial value, expect you know the system state at the beginning
-Eigen::Matrix2f P = Eigen::Matrix2f::Identity();
+Eigen::Matrix4f P = Eigen::Matrix4f::Identity();
 
 // The Model Matrix, how roll and roll_rate are related. Here roll = roll + DELTA * roll_rate, Whereas roll_rate doesn't change
 // Change this Matrix regarding the data you want to use, and regarding your device.
-const Eigen::Matrix2f F = (Eigen::Matrix2f() << 1.0f, DELTA,
-                                                0.0f, 1.0f).finished();
+const Eigen::Matrix4f F = (Eigen::Matrix4f() << 1.0f, 0.0f, DELTA, 0.0f,
+                                                0.0f, 1.0f, 0.0f, DELTA,
+                                                0.0f, 0.0f, 1.0f, 0.0f,
+                                                0.0f, 0.0f, 0.0f, 1.0f).finished();
 
 // Those next two matrices define whether the system is more "confident" to the prediction or more to the actual measurement.
 // You need to tune these matrices depending on your use case and sensor
 
 // How "not confident"(noise) we are on our prediction
-const Eigen::Matrix2f Q = (Eigen::Matrix2f() << 0.05f, 0.0f,
-                                                0.0f, 0.1f).finished();                                          
+const Eigen::Matrix4f Q = (Eigen::Matrix4f() << 1.0f, 0.0f, 0.0f, 0.0f,
+                                                0.0f, 1.0f, 0.0f, 0.0f,
+                                                0.0f, 0.0f, .5f, 0.0f,
+                                                0.0f, 0.0f, 0.0f, .5f).finished();                                          
 
 // How "not confident"(noise) we are on our measurement
-const Eigen::Matrix2f R = (Eigen::Matrix2f() << 5.0f, 0.0f,
-                                                0.0f, 10.0f).finished();
+const Eigen::Matrix4f R = (Eigen::Matrix4f() << 4.0f, 0.0f, 0.0f, 0.0f,
+                                                0.0f, 4.0f, 0.0f, 0.0f,
+                                                0.0f, 0.0f, 1.0f, 0.0f,
+                                                0.0f, 0.0f, 0.0f, 1.0f).finished();
 
 struct MPU6050_data
 {
@@ -83,7 +89,7 @@ extern "C"
     float accelZ = MPU_ACCEL_COEF * (((int16_t)data.accelZ_MSB << 8) + (int16_t)data.accelZ_LSB);
     float gyroX = MPU_GYRO_COEF * (((int16_t)data.gyroX_MSB << 8) + (int16_t)data.gyroX_LSB);
     float gyroY = MPU_GYRO_COEF * (((int16_t)data.gyroY_MSB << 8) + (int16_t)data.gyroY_LSB);
-    float gyroZ = MPU_GYRO_COEF * (((int16_t)data.gyroZ_MSB << 8) + (int16_t)data.gyroZ_LSB);
+    // float gyroZ = MPU_GYRO_COEF * (((int16_t)data.gyroZ_MSB << 8) + (int16_t)data.gyroZ_LSB);
 
     // Print to UART port, using Teleplot syntax
     // printf(">accelX:%f\n", accelX);
@@ -93,16 +99,13 @@ extern "C"
     // printf(">gyroY:%f\n", gyroY);
     // printf(">gyroZ:%f\n", gyroZ);
 
-    // Orientation form Accelerometer
-    float accelVector = sqrt((accelX * accelX)
-                              + (accelY * accelY)
-                              + (accelZ * accelZ));
-    float orientation = 0.0f;
-    if (abs(accelX) < accelVector)
-      orientation = std::asin(accelX / accelVector) * RAD_2_DEG;
-
     // Measurment Vector z
-    Eigen::Vector2f z { orientation, gyroY };
+    Eigen::Vector4f z;
+
+    z[0] = std::atan2(accelY, std::sqrt((accelX * accelX) + (accelZ * accelZ))) * RAD_2_DEG; // roll
+    z[1] = std::atan2(-accelX, std::sqrt((accelY * accelY) + (accelZ * accelZ))) * RAD_2_DEG; // pitch
+    z[2] = gyroX; // roll rate
+    z[3] = gyroY; // pitch rate
 
     //---------------------------
     //----- Prediction Step -----
@@ -119,18 +122,17 @@ extern "C"
     //----- Correction Step -----
     //---------------------------
     // "Confidence" of the difference between the predicted measurement and the actual measurement
-    const Eigen::Matrix2f S = P + R;
+    const Eigen::Matrix4f S = P + R;
     // Kalman Gain, represent how much the predictions should be corrected
-    const Eigen::Matrix2f K = P * S.inverse();
+    const Eigen::Matrix4f K = P * S.inverse();
     // Innovation vector it will be used to adjust the state estimate based on the new measurement
-    const Eigen::Vector2f v = z - X;
+    const Eigen::Vector4f v = z - X;
     // We correct the state with the measurement and the caclulated Kalman Gain(K) as well as Innovation vector(v)
     X = X + K * v;
     // We update how confident we are on the prediction
     // Since this is a measurement and not a prediction this matrices will now be closer to the identity matrix 
     P = P - (K * S * K.transpose());
 
-    //printf(">roll:%f\n", X[0]);
-    printf(">roll_rate:%f\n", X[1]);
+    printf("%.2f,%.2f\n", X[0], X[2]);
   }
 }
